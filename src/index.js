@@ -1,63 +1,40 @@
 const { GraphQLServer } = require('graphql-yoga');
+const { prisma } = require('../prisma/generated/prisma-client');
 const options = {
   port: 7890,
 };
-
-//dummy data
-let links = [
-  {
-    id: 'link-0',
-    url: 'www.howtographql.com',
-    description: 'Fullstack tutorial for GraphQL',
-  },
-  {
-    id: 'link-1',
-    url: 'www.howtographql.com',
-    description: 'Fullstack tutorial for GraphQL',
-  },
-];
-let idCount = links.length;
 
 //resolvers
 const resolvers = {
   Query: {
     info: () => `hackernews clone API`,
-    feed: () => links,
-    link: (parent, args) => {
-      const link = links.find((link) => link.id === args.id);
-      return link ? link : null;
+    feed: (root, args, context) => {
+      return context.prisma.links();
+    },
+    link: (parent, args, context) => {
+      return context.prisma.link({ id: args.id });
     },
   },
   Mutation: {
-    postLink: (parent, args) => {
-      const link = {
-        id: `link-${idCount++}`,
-        description: args.description,
+    postLink: (root, args, context) => {
+      return context.prisma.createLink({
         url: args.url,
-      };
-      links.push(link);
-      return link;
+        description: args.description,
+      });
     },
-    deleteLink: (parent, args) => {
-      const index = links.findIndex((link) => link.id === args.id);
-      if (index < 0) return null;
-      else {
-        const [link] = links.splice(index, 1);
-        return link;
-      }
+    deleteLink: (parent, args, context) => {
+      return context.prisma.deleteLink({ id: args.id });
     },
-    updateLink: (parent, args) => {
-      const index = links.findIndex((link) => link.id === args.id);
-      if (index < 0) return null;
-      else {
-        const oldLink = links[index];
-        const link = {
-          ...oldLink,
-          ...args,
-        };
-        links.splice(index, 1, link);
-        return link;
-      }
+    updateLink: (parent, args, context) => {
+      return context.prisma.updateLink({
+        data: {
+          description: args.description,
+          url: args.url,
+        },
+        where: {
+          id: args.id,
+        },
+      });
     },
   },
   Link: {
@@ -71,8 +48,8 @@ const resolvers = {
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
   resolvers,
+  context: { prisma },
 });
-
 server.start(options, (options) =>
   console.log(`Server is running on localhost:${options.port}`)
 );
