@@ -56,10 +56,27 @@ function updateLink(parent, args, context, info) {
     },
   });
 }
+
+async function vote(parent, args, context, info) {
+  const userId = getUserId(context);
+  const alreadyVoted = await context.prisma.$exists.vote({
+    user: { id: userId },
+    link: { id: args.linkId },
+  });
+  if (alreadyVoted) {
+    throw new Error('Already Voted!');
+  } else {
+    return context.prisma.createVote({
+      user: { connect: { id: userId } },
+      link: { connect: { id: args.linkId } },
+    });
+  }
+}
 module.exports = {
   signup,
   login,
   postLink,
   deleteLink,
   updateLink,
+  vote,
 };
