@@ -4,51 +4,29 @@ const options = {
   port: 7890,
 };
 
+const Query = require('./resolvers/Query');
+const Mutation = require('./resolvers/Mutation');
+const User = require('./resolvers/User');
+const Link = require('./resolvers/Link');
 //resolvers
+
 const resolvers = {
-  Query: {
-    info: () => `hackernews clone API`,
-    feed: (root, args, context) => {
-      return context.prisma.links();
-    },
-    link: (parent, args, context) => {
-      return context.prisma.link({ id: args.id });
-    },
-  },
-  Mutation: {
-    postLink: (root, args, context) => {
-      return context.prisma.createLink({
-        url: args.url,
-        description: args.description,
-      });
-    },
-    deleteLink: (parent, args, context) => {
-      return context.prisma.deleteLink({ id: args.id });
-    },
-    updateLink: (parent, args, context) => {
-      return context.prisma.updateLink({
-        data: {
-          description: args.description,
-          url: args.url,
-        },
-        where: {
-          id: args.id,
-        },
-      });
-    },
-  },
-  Link: {
-    id: (parent) => parent.id,
-    description: (parent) => parent.description,
-    url: (parent) => parent.url,
-  },
+  Query,
+  Mutation,
+  User,
+  Link,
 };
 
 //server
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
   resolvers,
-  context: { prisma },
+  context: (request) => {
+    return {
+      ...request,
+      prisma,
+    };
+  },
 });
 server.start(options, (options) =>
   console.log(`Server is running on localhost:${options.port}`)
