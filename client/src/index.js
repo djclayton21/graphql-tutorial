@@ -11,6 +11,7 @@ import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+import { AUTH_TOKEN } from './constants';
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:7890'
@@ -18,8 +19,7 @@ const httpLink = createHttpLink({
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  const token =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjazh1ZDQ4OWV4Mnd0MDkzNHEwNWwyaGFzIiwiaWF0IjoxNTg2NzMwODE0fQ.9wyImezDOvBCendXy4fw8-pMQhHjzAYDi_o9YH-S-k4';
+  const token = localStorage.getItem(AUTH_TOKEN)
   return {
     headers: {
       ...headers,
