@@ -50,7 +50,7 @@ export default function CreateLink({ history }) {
           onCompleted={() => history.push('/')}
           update={(store, { data: { postLink } }) => {
             const data = store.readQuery({ query: FEED_QUERY });
-            data.feed.links.push(postLink);
+            data.feed.links.unshift(postLink);
             store.writeQuery({ query: FEED_QUERY }, data);
           }}
         >
